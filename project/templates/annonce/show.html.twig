@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Details{% endblock %}
+
+{% block body %}
+
+<h1>Les details de cette annonce</h1>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <img src=" {{annonce.photo}} " class="card-img-top" alt="{{annonce.photo}}">
+            <div class="card-body">
+                <h5 class="card-title"> {{annonce.titre}} </h5>
+                <p>
+                    publié le : {{annonce.createdAt | date('d/m/Y')}} à {{annonce.createdAt | date('H:i')}} par auteur
+                </p>
+                <p>
+                Catégorie : {{ annonce.category.titre }}
+                </p>
+                <p class="card-text">
+                    {{annonce.contenu}}
+                </p>
+                <p>
+                    <a href="{{path('editer_annonce', {id : annonce.id})}}" class="btn btn-primary">Modifier</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <h4> Questions utiles sur cette annonce !
+    </div>
+    <div class="col-lg-6">
+        {% for commentaire in annonce.commentaires %}
+            <div class="row">
+                <div class="col-3">
+                    {{ commentaire.auteur }} <small> {{commentaire.createdAt | date('d/m/Y')}} à  {{commentaire.createdAt | date('H:i')}}</small> 
+                </div>
+                <div class="col">
+                    {{ commentaire.content | raw }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+    
+{% endblock %}

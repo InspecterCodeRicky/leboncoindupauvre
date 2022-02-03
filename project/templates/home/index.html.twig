@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="row">
+    <h2>Nos catégorie</h2>
+
+    {% for catergory in categories %}
+        <div class="col-lg-2 col-4 mb-5">
+            <div class="card bg-dark text-white">
+                <img src="https://via.placeholder.com/150" class="card-img" alt="images catege">
+                <div class="card-img-overlay">
+                    {{ catergory.titre }}
+                </div>
+            </div>
+        </div>
+        
+    {% endfor %}
+</div>
+
+<div class="row">
+    <h2>Annonces fraichement publiées</h2>
+</div>
+{% include "base/card-annonce.html.twig" %}
+{% endblock %}

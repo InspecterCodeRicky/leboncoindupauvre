@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Details{% endblock %}
+
+{% block body %}
+
+    <h1>Formulaire d'une annonce</h1>
+
+    {{ form_start(formAnnonce) }}
+    
+        {{ form_row(formAnnonce.titre, {'attr' : {'placeholder' : "Titre de l'annonce"}}) }}
+        {{ form_row(formAnnonce.contenu, {'attr' : {'placeholder' : "Contenu de l'annonce"}}) }}
+        {{ form_row(formAnnonce.category) }}
+        {{ form_row(formAnnonce.prix, {'attr' : {'placeholder' : "prix de l'annonnce"}}) }}
+        {{ form_row(formAnnonce.photo, {'attr' : {'placeholder' : "URL de l'image"}}) }}
+
+        <button type="submit" class="btn btn-success">
+            {% if editMode %}
+                Enregistrer les modifications
+            {% else %}
+                Ajouter l'annonce
+            {% endif %}
+        </button>
+    {{ form_end(formAnnonce) }}
+
+
+{% endblock %}

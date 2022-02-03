@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Le bon coin{% endblock %}
+
+{% block body %}
+
+<h1>Le bon coin du pauvre !</h1>
+
+<div class="row">
+    {% for annonce in annonces %}
+        <div class="col-lg-4 col-md-12 mb-5">
+            <div class="card">
+                <img src=" {{annonce.photo}} " class="card-img-top" alt="{{annonce.photo}}">
+                <div class="card-body">
+                    <h5 class="card-title"> {{annonce.titre}} </h5>
+                    <p class="card-text">
+                        {{annonce.contenu}}
+                    </p>
+                    <a href="{{path('show_annonce', {id : annonce.id})}}" class="btn btn-primary">Voir les détails</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="d-flex justify-content-center">
+        {% do annonces.setPageRange(2) %}
+        {{ knp_pagination_render(annonces, 'base/pagination.html.twig')  }}
+    </div>
+</div>
+{% endblock %}
