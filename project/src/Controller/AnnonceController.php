@@ -3,15 +3,22 @@
 namespace App\Controller;
 
 use App\Entity\Annonce;
+use App\Entity\Commentaire;
 use App\Form\AnnonceType;
+use App\Form\CommentaireFormType;
 use App\Repository\AnnonceRepository;
+use App\Repository\CommentaireRepository;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface as ObjectManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Cache\CacheInterface;
 
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class AnnonceController extends AbstractController
 {
@@ -37,45 +44,52 @@ class AnnonceController extends AbstractController
     }
 
     /**
-     * @Route("/details-annonce/{id}", name="show_annonce")
+     * @Route("/details-annonce/{id}-{slug}", name="show_annonce")
      */
-    public function showAnnonce($id, AnnonceRepository $repo): Response
+    public function showAnnonce($id, $slug, AnnonceRepository $repo, CommentaireRepository $commenRepo, Request $request, CacheInterface $cache): Response
     {
 
         $annonce = $repo->find($id);
 
-        return $this->render('annonce/show.html.twig', [
-            'annonce' => $annonce
-        ]);
-    }
+        $annonce = $cache->get('show_annonce_'.$id.''.$slug, function(ItemInterface $item) use($repo, $slug){
+            $item->expiresAfter(20);
+            return $repo->findOneBy(['slug' => $slug]);
+        });
 
-    /**
-     * @Route("/annonce/ajouter", name="ajouter_annonce")
-     * @Route("/annonce/{id}/editer", name="editer_annonce")
-     */
-    public function fomrAnnonce(Annonce $annonce = null, Request $request, ObjectManager $manager)
-    {
-        if (!$annonce) {
-            $annonce = new Annonce();
+        if(!$annonce){
+            throw new NotFoundHttpException('Pas d\'annonce trouvée');
         }
 
-        $form = $this->createForm(AnnonceType::class, $annonce);
-        $form->handleRequest($request);
+        $comment = new Commentaire();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            if (!$annonce->getId()) {
-                $annonce->setCreatedAt(new \DateTime());
+        $commentForm = $this->createForm(CommentaireFormType::class, $comment);
+
+        $commentForm->handleRequest($request);
+
+        if($commentForm->isSubmitted() && $commentForm->isValid()){
+            $comment->setCreatedAt(new DateTime());
+            $comment->setAnnonce($annonce);
+
+            $parentid = $commentForm->get("parentid")->getData();
+
+            if($parentid != null){
+                $parent = $commenRepo->getRepository(Commentaire::class)->find($parentid);
             }
 
-            $manager->persist($annonce);
-            $manager->flush();
+            $comment->setParent($parent ?? null);
 
-            return $this->redirectToRoute('show_annonce', ['id' => $annonce->getId()]);
+            $commenRepo->persist($comment);
+            $commenRepo->flush();
+
+            $this->addFlash('message', 'Votre commentaire a bien été envoyé');
+            return $this->redirectToRoute('show_annonce', ['id' => $annonce->getId() , 'slug' => $annonce->getSlug()]);
         }
 
-        return $this->render('annonce/create.html.twig', [
-            'formAnnonce' => $form->createView(),
-            'editMode' => $annonce->getId() !== null
+
+        return $this->render('annonce/show.html.twig', [
+            'annonce' => $annonce,
+            'commentForm' => $commentForm->createView()
         ]);
     }
+
 }

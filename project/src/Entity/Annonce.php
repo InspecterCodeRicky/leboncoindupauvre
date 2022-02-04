@@ -6,11 +6,14 @@ use App\Repository\AnnonceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 
 /**
  * @ORM\Entity(repositoryClass=AnnonceRepository::class)
+ * @Vich\Uploadable
  */
 class Annonce
 {
@@ -23,10 +26,15 @@ class Annonce
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\Url()
      */
     private $photo;
 
+    /**
+     * @Vich\UploadableField(mapping="annonce_images", fileNameProperty="photo")
+     * @var File
+     */
+    private $photoFile;
+    
     /**
      * @ORM\Column(type="text")
      */
@@ -66,9 +74,26 @@ class Annonce
      */
     private $auteur;
 
+    /**
+     * @ORM\Column(type="string", length=255, unique=true)
+     */
+    private $slug;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $onSale;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Attachment::class, mappedBy="annonce", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $attachments;
+
     public function __construct()
     {
         $this->commentaires = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -76,12 +101,24 @@ class Annonce
         return $this->id;
     }
 
+
+
+    public function setPhotoFile(File $image = null)
+    {
+        $this->photoFile = $image;
+    }
+
+    public function getPhotoFile()
+    {
+        return $this->photoFile;
+    }
+
     public function getPhoto(): ?string
     {
         return $this->photo;
     }
 
-    public function setPhoto(string $photo): self
+    public function setPhoto(?string $photo): self
     {
         $this->photo = $photo;
 
@@ -186,6 +223,60 @@ class Annonce
     public function setAuteur(?User $auteur): self
     {
         $this->auteur = $auteur;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getOnSale(): ?bool
+    {
+        return $this->onSale;
+    }
+
+    public function setOnSale(bool $onSale): self
+    {
+        $this->onSale = $onSale;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Attachment[]
+     */
+    public function getAttachments(): Collection
+    {
+        return $this->attachments;
+    }
+
+    public function addAttachment(Attachment $attachment): self
+    {
+        if (!$this->attachments->contains($attachment)) {
+            $this->attachments[] = $attachment;
+            $attachment->setAnnonce($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttachment(Attachment $attachment): self
+    {
+        if ($this->attachments->removeElement($attachment)) {
+            // set the owning side to null (unless already changed)
+            if ($attachment->getAnnonce() === $this) {
+                $attachment->setAnnonce(null);
+            }
+        }
 
         return $this;
     }

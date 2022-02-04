@@ -1,0 +1,20 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block main %}
+
+	<div class="grix xs4 container">
+
+		<div class="col-xs4">
+			<h1>Mon Profil</h1>
+		</div>
+		<div class="col-xs1">Nom : {{ app.user.username }}</div>
+		<div class="col-xs1">Email : {{ app.user.email }}</div>
+		<div class="col-xs4">
+            <a href="{{ path('modify_profile') }}" class="btn">Modifier le profil</a>
+            <a href="{{ path('reset_password') }}" class="btn">Réinitialisez votre mot de passe</a>
+            {# <a href="{{ path('reset-password')}}" class="btn">Modifier le mot de passe</a> #}
+        </div>
+
+        
+	</div>
+{% endblock %}

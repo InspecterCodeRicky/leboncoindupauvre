@@ -2,13 +2,13 @@
     {% for annonce in annonces %}
         <div class="col-lg-4 col-md-12 mb-5">
             <div class="card">
-                <img src=" {{annonce.photo}} " class="card-img-top" alt="{{annonce.photo}}">
+                <img src=" uploads/annonces/{{annonce.photo}} " class="card-img-top" alt="{{annonce.photo}}">
                 <div class="card-body">
                     <h5 class="card-title"> {{annonce.titre}} </h5>
-                    <p class="card-text">
-                        {{annonce.contenu}}
+                    <p>{{ annonce.contenu|striptags|u.truncate(150, '...') }}</p>
+                    <p>
+                        <a href="{{path('show_annonce', {'slug':annonce.slug, 'id' : annonce.id})}}" class="btn btn-primary">Voir les détails</a>
                     </p>
-                    <a href="{{path('show_annonce', {id : annonce.id})}}" class="btn btn-primary">Voir les détails</a>
                 </div>
             </div>
         </div>
